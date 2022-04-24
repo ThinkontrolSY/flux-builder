@@ -2,7 +2,6 @@ package transformpipe
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 )
 
@@ -50,13 +49,13 @@ type AggregatorPipe struct {
 		Aggregate by week
 		When aggregating by week (1w), weeks are determined using the Unix epoch (1970-01-01T00:00:00Z UTC). The Unix epoch was on a Thursday, so all calculated weeks begin on Thursday.
 	*/
-	Every string
+	Every Duration
 
 	/*
 		period
 		Duration of the window. Period is the length of each interval. The period can be negative, indicating the start and stop boundaries are reversed. Defaults to every value.
 	*/
-	Period *string
+	Period *Duration
 
 	/*
 		column
@@ -74,17 +73,16 @@ type AggregatorPipe struct {
 }
 
 func (a *AggregatorPipe) Pipe() (string, error) {
-	r := regexp.MustCompile(`^(\d+(ns|us|ms|s|m|h|d|w|mo|y))+$`)
 	var params []string
 	params = append(params, fmt.Sprintf("fn: %s", a.Fn))
-	if !r.MatchString(a.Every) {
-		return "", fmt.Errorf("Invalid Every value: %s, Every should be a duration IMPL#2026", a.Every)
+	if err := a.Every.Error(); err != nil {
+		return "", err
 	} else {
 		params = append(params, fmt.Sprintf("every: %s", a.Every))
 	}
 	if a.Period != nil {
-		if !r.MatchString(*a.Period) {
-			return "", fmt.Errorf("Invalid Period value: %s, Period should be a duration IMPL#2026", *a.Period)
+		if err := a.Period.Error(); err != nil {
+			return "", err
 		} else {
 			params = append(params, fmt.Sprintf("period: %s", *a.Period))
 		}

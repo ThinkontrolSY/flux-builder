@@ -28,28 +28,33 @@ func (q *FluxQuery) Stop() *string {
 	return q.stop
 }
 
-func (q *FluxQuery) SetBucket(s string) {
+func (q *FluxQuery) SetBucket(s string) *FluxQuery {
 	q.bucket = s
+	return q
 }
 
-func (q *FluxQuery) SetStart(s string) {
+func (q *FluxQuery) SetStart(s string) *FluxQuery {
 	q.start = s
+	return q
 }
 
-func (q *FluxQuery) SetStop(s *string) {
+func (q *FluxQuery) SetStop(s *string) *FluxQuery {
 	q.stop = s
+	return q
 }
 
-func (q *FluxQuery) AddFilter(f *filter.FluxFilter) {
+func (q *FluxQuery) AddFilter(f *filter.FluxFilter) *FluxQuery {
 	if f != nil {
 		q.filters = append(q.filters, f)
 	}
+	return q
 }
 
-func (q *FluxQuery) AddTransform(f pipe.TransformPipe) {
+func (q *FluxQuery) AddTransform(f pipe.TransformPipe) *FluxQuery {
 	if f != nil {
 		q.transforms = append(q.transforms, f)
 	}
+	return q
 }
 
 func (p *FluxQuery) QueryString() (string, error) {
