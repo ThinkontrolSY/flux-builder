@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/ThinkontrolSY/flux-builder/filter"
-	pipe "github.com/ThinkontrolSY/flux-builder/transform_pipe"
+	pipe "github.com/ThinkontrolSY/flux-builder/transformpipe"
 )
 
 type FluxQuery struct {
