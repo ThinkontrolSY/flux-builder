@@ -9,66 +9,54 @@ import (
 )
 
 type FluxQuery struct {
-	bucket     string
-	start      string
-	stop       *string
-	filters    []*filter.FluxFilter
-	transforms []pipe.TransformPipe
-}
-
-func (q *FluxQuery) Bucket() string {
-	return q.bucket
-}
-
-func (q *FluxQuery) Start() string {
-	return q.start
-}
-
-func (q *FluxQuery) Stop() *string {
-	return q.stop
+	Bucket     string
+	Start      string
+	Stop       *string
+	Filters    []*filter.FluxFilter
+	Transforms []pipe.TransformPipe
 }
 
 func (q *FluxQuery) SetBucket(s string) *FluxQuery {
-	q.bucket = s
+	q.Bucket = s
 	return q
 }
 
 func (q *FluxQuery) SetStart(s string) *FluxQuery {
-	q.start = s
+	q.Start = s
 	return q
 }
 
 func (q *FluxQuery) SetStop(s *string) *FluxQuery {
-	q.stop = s
+	q.Stop = s
 	return q
 }
 
 func (q *FluxQuery) AddFilter(f *filter.FluxFilter) *FluxQuery {
 	if f != nil {
-		q.filters = append(q.filters, f)
+		q.Filters = append(q.Filters, f)
 	}
 	return q
 }
 
 func (q *FluxQuery) AddTransform(f pipe.TransformPipe) *FluxQuery {
 	if f != nil {
-		q.transforms = append(q.transforms, f)
+		q.Transforms = append(q.Transforms, f)
 	}
 	return q
 }
 
 func (p *FluxQuery) QueryString() (string, error) {
 	pipes := []string{
-		fmt.Sprintf("from(bucket: \"%s\")", p.bucket),
+		fmt.Sprintf("from(bucket: \"%s\")", p.Bucket),
 	}
 
-	if p.stop == nil {
-		pipes = append(pipes, fmt.Sprintf("|> range(start: %s)", p.start))
+	if p.Stop == nil {
+		pipes = append(pipes, fmt.Sprintf("|> range(start: %s)", p.Start))
 	} else {
-		pipes = append(pipes, fmt.Sprintf("|> range(start: %s, stop: %s)", p.start, *p.stop))
+		pipes = append(pipes, fmt.Sprintf("|> range(start: %s, stop: %s)", p.Start, *p.Stop))
 	}
 
-	for _, f := range p.filters {
+	for _, f := range p.Filters {
 		if f == nil {
 			continue
 		}
@@ -79,7 +67,7 @@ func (p *FluxQuery) QueryString() (string, error) {
 		pipes = append(pipes, fp)
 	}
 
-	for _, t := range p.transforms {
+	for _, t := range p.Transforms {
 		if t == nil {
 			continue
 		}
