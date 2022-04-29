@@ -8,6 +8,7 @@ import (
 
 	"github.com/ThinkontrolSY/flux-builder/query"
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
+	iq "github.com/influxdata/influxdb-client-go/v2/api/query"
 )
 
 type Config struct {
@@ -119,7 +120,7 @@ func (w *InfluxClient) TagValues(measurement, tag string) ([]string, error) {
 	return tags, nil
 }
 
-func (w *InfluxClient) Query(q query.FluxQuery) ([]ResutTable, error) {
+func (w *InfluxClient) Query(q query.FluxQuery) ([]*iq.FluxRecord, error) {
 	flux, err := q.QueryString()
 	if err != nil {
 		return nil, err
@@ -130,7 +131,7 @@ func (w *InfluxClient) Query(q query.FluxQuery) ([]ResutTable, error) {
 	if err != nil {
 		return nil, err
 	}
-	var tables []ResutTable
+	var tables []*iq.FluxRecord
 	// check for an error
 	if result.Err() != nil {
 		log.Printf("query parsing error: %s", result.Err().Error())
@@ -140,18 +141,19 @@ func (w *InfluxClient) Query(q query.FluxQuery) ([]ResutTable, error) {
 			log.Printf("table: %s", result.TableMetadata().String())
 		}
 		// Access data
-		record := result.Record()
-		tables = append(tables, ResutTable{
-			Measurement: record.Measurement(),
-			Field:       record.Field(),
-			Result:      record.Result(),
-			Start:       record.Start(),
-			Stop:        record.Stop(),
-			Time:        record.Time(),
-			Table:       record.Table(),
-			Value:       record.Value(),
-			Values:      record.Values(),
-		})
+		// record := result.Record()
+		tables = append(tables, result.Record())
+		// tables = append(tables, ResutTable{
+		// 	Measurement: record.Measurement(),
+		// 	Field:       record.Field(),
+		// 	Result:      record.Result(),
+		// 	Start:       record.Start(),
+		// 	Stop:        record.Stop(),
+		// 	Time:        record.Time(),
+		// 	Table:       record.Table(),
+		// 	Value:       record.Value(),
+		// 	Values:      record.Values(),
+		// })
 
 	}
 	return tables, nil
