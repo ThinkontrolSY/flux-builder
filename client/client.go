@@ -39,8 +39,8 @@ func NewClient(config Config) (*InfluxClient, func()) {
 	}, influxClient.Close
 }
 
-func (w *InfluxClient) Schema() ([]MeasurementSchema, error) {
-	var schema []MeasurementSchema
+func (w *InfluxClient) Schema() ([]*MeasurementSchema, error) {
+	var schema []*MeasurementSchema
 	queryAPI := w.client.QueryAPI(w.org)
 	ctx := context.Background()
 	result, err := queryAPI.Query(ctx, fmt.Sprintf(`import "influxdata/influxdb/schema"
@@ -87,7 +87,7 @@ func (w *InfluxClient) Schema() ([]MeasurementSchema, error) {
 			}
 		}
 
-		schema = append(schema, MeasurementSchema{
+		schema = append(schema, &MeasurementSchema{
 			Measurement: measurement,
 			Fields:      fields,
 			Tags:        tags,
