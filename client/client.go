@@ -12,10 +12,10 @@ import (
 )
 
 type Config struct {
-	Uri    string `mapstructure:"uri"`
-	Token  string `mapstructure:"token"`
-	Org    string `mapstructure:"org"`
-	Bucket string `mapstructure:"bucket"`
+	Uri   string `mapstructure:"uri"`
+	Token string `mapstructure:"token"`
+	Org   string `mapstructure:"org"`
+	// Bucket string `mapstructure:"bucket"`
 }
 
 type MeasurementSchema struct {
@@ -27,7 +27,7 @@ type MeasurementSchema struct {
 type InfluxClient struct {
 	client influxdb2.Client
 	org    string
-	bucket string
+	// bucket string
 }
 
 func NewClient(config Config) (*InfluxClient, func()) {
@@ -35,16 +35,31 @@ func NewClient(config Config) (*InfluxClient, func()) {
 	return &InfluxClient{
 		client: influxClient,
 		org:    config.Org,
-		bucket: config.Bucket,
+		// bucket: config.Bucket,
 	}, influxClient.Close
 }
 
-func (w *InfluxClient) Schema() ([]*MeasurementSchema, error) {
+func (w *InfluxClient) Buckets(ctx context.Context) ([]string, error) {
+	var buckets []string
+	bucketApi := w.client.BucketsAPI()
+	domainBuckets, err := bucketApi.FindBucketsByOrgName(ctx, w.org)
+	if err != nil {
+		return nil, err
+	}
+	if domainBuckets != nil {
+		for _, b := range *domainBuckets {
+			buckets = append(buckets, b.Name)
+		}
+	}
+	return buckets, nil
+}
+
+func (w *InfluxClient) Schema(bucket string) ([]*MeasurementSchema, error) {
 	var schema []*MeasurementSchema
 	queryAPI := w.client.QueryAPI(w.org)
 	ctx := context.Background()
 	result, err := queryAPI.Query(ctx, fmt.Sprintf(`import "influxdata/influxdb/schema"
-	schema.measurements(bucket: "%s")`, w.bucket))
+	schema.measurements(bucket: "%s")`, bucket))
 	if err != nil {
 		log.Printf("query error: %v", err)
 		return nil, err
@@ -56,7 +71,7 @@ func (w *InfluxClient) Schema() ([]*MeasurementSchema, error) {
 	for result.Next() {
 		measurement := fmt.Sprintf("%s", result.Record().Value())
 		fieldResult, fieldErr := queryAPI.Query(ctx, fmt.Sprintf(`import "influxdata/influxdb/schema"
-		schema.measurementFieldKeys(bucket: "%s", measurement: "%s",)`, w.bucket, measurement))
+		schema.measurementFieldKeys(bucket: "%s", measurement: "%s",)`, bucket, measurement))
 		if fieldErr != nil {
 			log.Printf("query error: %v", fieldErr)
 			return nil, fieldErr
@@ -70,7 +85,7 @@ func (w *InfluxClient) Schema() ([]*MeasurementSchema, error) {
 			fields = append(fields, fmt.Sprintf("%s", fieldResult.Record().Value()))
 		}
 		tagResult, tagErr := queryAPI.Query(ctx, fmt.Sprintf(`import "influxdata/influxdb/schema"
-		schema.measurementTagKeys(bucket: "%s", measurement: "%s",)`, w.bucket, measurement))
+		schema.measurementTagKeys(bucket: "%s", measurement: "%s",)`, bucket, measurement))
 		if tagErr != nil {
 			log.Printf("query error: %v", tagErr)
 			return nil, tagErr
@@ -96,7 +111,7 @@ func (w *InfluxClient) Schema() ([]*MeasurementSchema, error) {
 	return schema, nil
 }
 
-func (w *InfluxClient) TagValues(measurement, tag string) ([]string, error) {
+func (w *InfluxClient) TagValues(bucket, measurement, tag string) ([]string, error) {
 	var tags []string
 	queryAPI := w.client.QueryAPI(w.org)
 	ctx := context.Background()
@@ -105,7 +120,7 @@ func (w *InfluxClient) TagValues(measurement, tag string) ([]string, error) {
 		bucket: "%s",
 		tag: "%s",
 		measurement: "%s",
-	)`, w.bucket, tag, measurement))
+	)`, bucket, tag, measurement))
 	if err != nil {
 		log.Printf("query error: %v", err)
 		return nil, err
