@@ -25,6 +25,8 @@ type FluxFilter struct {
 	TagNEQ    *string
 	TagMatch  *string
 	TagNMatch *string
+
+	Value *string
 }
 
 func (f *FluxFilter) AddNot(n *FluxFilter) {
@@ -133,6 +135,10 @@ func (f *FluxFilter) p() (string, error) {
 		if f.TagNMatch != nil {
 			equations = append(equations, fmt.Sprintf("r.%s !~ %s", *f.TagKey, *f.TagNMatch))
 		}
+	}
+
+	if f.Value != nil {
+		equations = append(equations, fmt.Sprintf("r._value %s", *f.Value))
 	}
 
 	switch len(equations) {
