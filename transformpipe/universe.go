@@ -211,6 +211,26 @@ func (a *FirstPipe) Pipe() (string, error) {
 	return "|> first()", nil
 }
 
+type GroupPipe struct {
+	Mode    *string
+	Columns []string
+}
+
+func (a *GroupPipe) Pipe() (string, error) {
+	var params []string
+	if a.Mode != nil {
+		mode := "by"
+		if *a.Mode == "except" {
+			mode = "except"
+		}
+		params = append(params, fmt.Sprintf(`mode: "%s"`, mode))
+	}
+	if len(a.Columns) > 0 {
+		params = append(params, fmt.Sprintf(`columns: ["%s"]`, strings.Join(a.Columns, `", "`)))
+	}
+	return fmt.Sprintf("|> group(%s)", strings.Join(params, ", ")), nil
+}
+
 type LastPipe struct{}
 
 func (a *LastPipe) Pipe() (string, error) {

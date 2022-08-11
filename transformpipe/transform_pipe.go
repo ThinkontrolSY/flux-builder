@@ -132,6 +132,16 @@ func (t *TransformInput) Transform() (TransformPipe, error) {
 		}
 	case "first":
 		return &FirstPipe{}, nil
+	case "group":
+		if t.Params == nil {
+			return &GroupPipe{}, nil
+		}
+		var tp GroupPipe
+		if err := mapstructure.Decode(t.Params, &tp); err == nil {
+			return &tp, nil
+		} else {
+			return nil, err
+		}
 	case "last":
 		return &LastPipe{}, nil
 	case "increase":
