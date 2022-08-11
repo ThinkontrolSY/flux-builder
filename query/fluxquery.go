@@ -50,6 +50,9 @@ func (p *FluxQuery) QueryString() (string, error) {
 		fmt.Sprintf("from(bucket: \"%s\")", p.Bucket),
 	}
 
+	if p.Start == nil && p.Stop == nil {
+		return "", fmt.Errorf("start and stop are required")
+	}
 	if p.Start != nil && p.Stop == nil {
 		pipes = append(pipes, fmt.Sprintf("|> range(start: %s)", *p.Start))
 	}
