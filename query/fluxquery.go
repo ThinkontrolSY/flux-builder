@@ -10,7 +10,7 @@ import (
 
 type FluxQuery struct {
 	Bucket     string
-	Start      string
+	Start      *string
 	Stop       *string
 	Filters    []*filter.FluxFilter
 	Transforms []pipe.TransformPipe
@@ -21,7 +21,7 @@ func (q *FluxQuery) SetBucket(s string) *FluxQuery {
 	return q
 }
 
-func (q *FluxQuery) SetStart(s string) *FluxQuery {
+func (q *FluxQuery) SetStart(s *string) *FluxQuery {
 	q.Start = s
 	return q
 }
@@ -50,10 +50,14 @@ func (p *FluxQuery) QueryString() (string, error) {
 		fmt.Sprintf("from(bucket: \"%s\")", p.Bucket),
 	}
 
-	if p.Stop == nil {
-		pipes = append(pipes, fmt.Sprintf("|> range(start: %s)", p.Start))
-	} else {
-		pipes = append(pipes, fmt.Sprintf("|> range(start: %s, stop: %s)", p.Start, *p.Stop))
+	if p.Start != nil && p.Stop == nil {
+		pipes = append(pipes, fmt.Sprintf("|> range(start: %s)", *p.Start))
+	}
+	if p.Start != nil && p.Stop != nil {
+		pipes = append(pipes, fmt.Sprintf("|> range(start: %s, stop: %s)", *p.Start, *p.Stop))
+	}
+	if p.Start == nil && p.Stop != nil {
+		pipes = append(pipes, fmt.Sprintf("|> range(stop: %s)", *p.Stop))
 	}
 
 	for _, f := range p.Filters {
