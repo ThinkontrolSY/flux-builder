@@ -170,6 +170,14 @@ func (a *ExponentialMovingAveragePipe) Pipe() (string, error) {
 	return fmt.Sprintf("|> exponentialMovingAverage(n: %d)", a.N), nil
 }
 
+type FilterPipe struct {
+	Fn string
+}
+
+func (a *FilterPipe) Pipe() (string, error) {
+	return fmt.Sprintf("|> filter(fn: %s)", a.Fn), nil
+}
+
 type FillPipe struct {
 	Value       interface{}
 	Column      *string
