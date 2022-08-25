@@ -174,6 +174,27 @@ func (w *InfluxClient) Query(q query.FluxQuery) ([]*iq.FluxRecord, error) {
 	return tables, nil
 }
 
+func (w *InfluxClient) StrQuery(q string) ([]*iq.FluxRecord, error) {
+	queryAPI := w.client.QueryAPI(w.org)
+	ctx := context.Background()
+	result, err := queryAPI.Query(ctx, q)
+	if err != nil {
+		return nil, err
+	}
+	var tables []*iq.FluxRecord
+	// check for an error
+	if result.Err() != nil {
+		log.Printf("query parsing error: %s", result.Err().Error())
+	}
+	for result.Next() {
+		if result.TableChanged() {
+			log.Printf("table: %s", result.TableMetadata().String())
+		}
+		tables = append(tables, result.Record())
+	}
+	return tables, nil
+}
+
 func (w *InfluxClient) QueryRaw(q query.FluxQuery) (string, error) {
 	flux, err := q.QueryString()
 	if err != nil {
