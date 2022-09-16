@@ -35,7 +35,7 @@ func NewClient(config Config) (*InfluxClient, func()) {
 	return &InfluxClient{
 		client: influxClient,
 		org:    config.Org,
-		// bucket: config.Bucket,
+		bucket: config.Bucket,
 	}, influxClient.Close
 }
 
