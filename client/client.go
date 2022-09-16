@@ -12,10 +12,10 @@ import (
 )
 
 type Config struct {
-	Uri   string `mapstructure:"uri"`
-	Token string `mapstructure:"token"`
-	Org   string `mapstructure:"org"`
-	// Bucket string `mapstructure:"bucket"`
+	Uri    string `mapstructure:"uri"`
+	Token  string `mapstructure:"token"`
+	Org    string `mapstructure:"org"`
+	Bucket string `mapstructure:"bucket"`
 }
 
 type MeasurementSchema struct {
@@ -27,7 +27,7 @@ type MeasurementSchema struct {
 type InfluxClient struct {
 	client influxdb2.Client
 	org    string
-	// bucket string
+	bucket string
 }
 
 func NewClient(config Config) (*InfluxClient, func()) {
@@ -37,6 +37,14 @@ func NewClient(config Config) (*InfluxClient, func()) {
 		org:    config.Org,
 		// bucket: config.Bucket,
 	}, influxClient.Close
+}
+
+func (w *InfluxClient) GetOrg() string {
+	return w.org
+}
+
+func (w *InfluxClient) GetBucket() string {
+	return w.bucket
 }
 
 func (w *InfluxClient) Buckets(ctx context.Context) ([]string, error) {
