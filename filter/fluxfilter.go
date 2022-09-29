@@ -99,11 +99,11 @@ func (f *FluxFilter) p() (string, error) {
 	}
 
 	if f.MeasurementMatch != nil {
-		equations = append(equations, fmt.Sprintf("r._measurement =~ %s", *f.MeasurementMatch))
+		equations = append(equations, fmt.Sprintf("r._measurement =~ \"%s\"", *f.MeasurementMatch))
 	}
 
 	if f.MeasurementNMatch != nil {
-		equations = append(equations, fmt.Sprintf("r._measurement !~ %s", *f.MeasurementNMatch))
+		equations = append(equations, fmt.Sprintf("r._measurement !~ \"%s\"", *f.MeasurementNMatch))
 	}
 
 	if f.Field != nil {
@@ -115,11 +115,11 @@ func (f *FluxFilter) p() (string, error) {
 	}
 
 	if f.FieldMatch != nil {
-		equations = append(equations, fmt.Sprintf("r._field =~ %s", *f.FieldMatch))
+		equations = append(equations, fmt.Sprintf("r._field =~ \"%s\"", *f.FieldMatch))
 	}
 
 	if f.FieldNMatch != nil {
-		equations = append(equations, fmt.Sprintf("r._field !~ %s", *f.FieldNMatch))
+		equations = append(equations, fmt.Sprintf("r._field !~ \"%s\"", *f.FieldNMatch))
 	}
 
 	if f.TagKey != nil {
@@ -130,10 +130,10 @@ func (f *FluxFilter) p() (string, error) {
 			equations = append(equations, fmt.Sprintf("r.%s != \"%s\"", *f.TagKey, *f.TagNEQ))
 		}
 		if f.TagMatch != nil {
-			equations = append(equations, fmt.Sprintf("r.%s =~ %s", *f.TagKey, *f.TagMatch))
+			equations = append(equations, fmt.Sprintf("r.%s =~ \"%s\"", *f.TagKey, *f.TagMatch))
 		}
 		if f.TagNMatch != nil {
-			equations = append(equations, fmt.Sprintf("r.%s !~ %s", *f.TagKey, *f.TagNMatch))
+			equations = append(equations, fmt.Sprintf("r.%s !~ \"%s\"", *f.TagKey, *f.TagNMatch))
 		}
 	}
 
