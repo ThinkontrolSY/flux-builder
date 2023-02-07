@@ -161,12 +161,14 @@ func (w *InfluxClient) Query(q query.FluxQuery) ([]*iq.FluxRecord, error) {
 		log.Warn("query parsing error: %s", result.Err().Error())
 	}
 	for result.Next() {
+		// Access data
+		record := result.Record()
 		if result.TableChanged() {
 			log.Info("table: %s", result.TableMetadata().String())
+			log.Debugf("table: %v, field: %v, time: %v, value: %v", record.Table(), record.Field(), record.Time(), record.Value())
 		}
-		// Access data
-		// record := result.Record()
-		tables = append(tables, result.Record())
+
+		tables = append(tables, record)
 		// tables = append(tables, ResutTable{
 		// 	Measurement: record.Measurement(),
 		// 	Field:       record.Field(),
