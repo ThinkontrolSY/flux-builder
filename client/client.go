@@ -3,8 +3,9 @@ package client
 import (
 	"context"
 	"fmt"
-	"log"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ThinkontrolSY/flux-builder/query"
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
@@ -69,11 +70,11 @@ func (w *InfluxClient) Schema(bucket string) ([]*MeasurementSchema, error) {
 	result, err := queryAPI.Query(ctx, fmt.Sprintf(`import "influxdata/influxdb/schema"
 	schema.measurements(bucket: "%s")`, bucket))
 	if err != nil {
-		log.Printf("query error: %v", err)
+		log.Warn("query error: %v", err)
 		return nil, err
 	}
 	if result.Err() != nil {
-		log.Printf("query parsing error: %s", result.Err().Error())
+		log.Warn("query parsing error: %s", result.Err().Error())
 		return nil, result.Err()
 	}
 	for result.Next() {
@@ -81,11 +82,11 @@ func (w *InfluxClient) Schema(bucket string) ([]*MeasurementSchema, error) {
 		fieldResult, fieldErr := queryAPI.Query(ctx, fmt.Sprintf(`import "influxdata/influxdb/schema"
 		schema.measurementFieldKeys(bucket: "%s", measurement: "%s",)`, bucket, measurement))
 		if fieldErr != nil {
-			log.Printf("query error: %v", fieldErr)
+			log.Warn("query error: %v", fieldErr)
 			return nil, fieldErr
 		}
 		if fieldResult.Err() != nil {
-			log.Printf("query parsing error: %s", fieldResult.Err().Error())
+			log.Warn("query parsing error: %s", fieldResult.Err().Error())
 			return nil, fieldResult.Err()
 		}
 		var fields []string
@@ -95,11 +96,11 @@ func (w *InfluxClient) Schema(bucket string) ([]*MeasurementSchema, error) {
 		tagResult, tagErr := queryAPI.Query(ctx, fmt.Sprintf(`import "influxdata/influxdb/schema"
 		schema.measurementTagKeys(bucket: "%s", measurement: "%s",)`, bucket, measurement))
 		if tagErr != nil {
-			log.Printf("query error: %v", tagErr)
+			log.Warn("query error: %v", tagErr)
 			return nil, tagErr
 		}
 		if tagResult.Err() != nil {
-			log.Printf("query parsing error: %s", tagResult.Err().Error())
+			log.Warn("query parsing error: %s", tagResult.Err().Error())
 			return nil, tagResult.Err()
 		}
 		var tags []string
@@ -130,11 +131,11 @@ func (w *InfluxClient) TagValues(bucket, measurement, tag string) ([]string, err
 		measurement: "%s",
 	)`, bucket, tag, measurement))
 	if err != nil {
-		log.Printf("query error: %v", err)
+		log.Warn("query error: %v", err)
 		return nil, err
 	}
 	if result.Err() != nil {
-		log.Printf("query parsing error: %s", result.Err().Error())
+		log.Warn("query parsing error: %s", result.Err().Error())
 		return nil, result.Err()
 	}
 	for result.Next() {
@@ -157,11 +158,11 @@ func (w *InfluxClient) Query(q query.FluxQuery) ([]*iq.FluxRecord, error) {
 	var tables []*iq.FluxRecord
 	// check for an error
 	if result.Err() != nil {
-		log.Printf("query parsing error: %s", result.Err().Error())
+		log.Warn("query parsing error: %s", result.Err().Error())
 	}
 	for result.Next() {
 		if result.TableChanged() {
-			log.Printf("table: %s", result.TableMetadata().String())
+			log.Info("table: %s", result.TableMetadata().String())
 		}
 		// Access data
 		// record := result.Record()
@@ -192,11 +193,11 @@ func (w *InfluxClient) StrQuery(q string) ([]*iq.FluxRecord, error) {
 	var tables []*iq.FluxRecord
 	// check for an error
 	if result.Err() != nil {
-		log.Printf("query parsing error: %s", result.Err().Error())
+		log.Warn("query parsing error: %s", result.Err().Error())
 	}
 	for result.Next() {
 		if result.TableChanged() {
-			log.Printf("table: %s", result.TableMetadata().String())
+			log.Warn("table: %s", result.TableMetadata().String())
 		}
 		tables = append(tables, result.Record())
 	}
