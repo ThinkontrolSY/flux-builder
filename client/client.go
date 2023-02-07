@@ -165,7 +165,7 @@ func (w *InfluxClient) Query(q query.FluxQuery) ([]*iq.FluxRecord, error) {
 		record := result.Record()
 		if result.TableChanged() {
 			log.Info("table: %s", result.TableMetadata().String())
-			log.Debugf("table: %v, field: %v, time: %v, value: %v", record.Table(), record.Field(), record.Time(), record.Value())
+			// log.Debugf("table: %v, field: %v, time: %v, value: %v", record.Table(), record.Field(), record.Time(), record.Value())
 		}
 
 		tables = append(tables, record)
