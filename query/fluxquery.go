@@ -10,6 +10,7 @@ import (
 
 type FluxQuery struct {
 	Bucket     string
+	Timezone   *string
 	Start      *string
 	Stop       *string
 	Filters    []*filter.FluxFilter
@@ -46,9 +47,12 @@ func (q *FluxQuery) AddTransform(f pipe.TransformPipe) *FluxQuery {
 }
 
 func (p *FluxQuery) QueryString() (string, error) {
-	pipes := []string{
-		fmt.Sprintf("from(bucket: \"%s\")", p.Bucket),
+	pipes := []string{}
+	if p.Timezone != nil {
+		pipes = append(pipes, "import \"timezone\"")
+		pipes = append(pipes, fmt.Sprintf("option location = timezone.location(name: \"%s\")", *p.Timezone))
 	}
+	pipes = append(pipes, fmt.Sprintf("from(bucket: \"%s\")", p.Bucket))
 
 	if p.Start == nil && p.Stop == nil {
 		return "", fmt.Errorf("start and stop are required")
