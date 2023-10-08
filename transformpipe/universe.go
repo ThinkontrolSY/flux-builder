@@ -482,12 +482,12 @@ func (a *SpreadPipe) Pipe() (string, error) {
 
 type StateCountPipe struct {
 	Column *string
-	Key    string
+	Fn     string
 }
 
 func (a *StateCountPipe) Pipe() (string, error) {
 	var params []string
-	params = append(params, fmt.Sprintf(`fn: (r) => r._field == "%s"`, a.Key))
+	params = append(params, fmt.Sprintf(`fn: %s`, a.Fn))
 	if a.Column != nil {
 		params = append(params, fmt.Sprintf(`column: "%s"`, *a.Column))
 	}
@@ -496,13 +496,13 @@ func (a *StateCountPipe) Pipe() (string, error) {
 
 type StateDurationPipe struct {
 	Column *string
-	Key    string
+	Fn     string
 	Unit   *Duration
 }
 
 func (a *StateDurationPipe) Pipe() (string, error) {
 	var params []string
-	params = append(params, fmt.Sprintf(`fn: (r) => r._field == "%s"`, a.Key))
+	params = append(params, fmt.Sprintf(`fn: %s`, a.Fn))
 	if a.Column != nil {
 		params = append(params, fmt.Sprintf(`column: "%s"`, *a.Column))
 	}
