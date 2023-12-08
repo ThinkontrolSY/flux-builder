@@ -20,11 +20,11 @@ func TestInfluxWrap_Query(t *testing.T) {
 	// |> filter(fn: (r) => r["_field"] == "SoilVolumetricWaterContent" or r["_field"] == "SoilTemperature")
 	// |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
 	// |> yield(name: "mean")`
-
-	buckets, err := wclient.Buckets(context.Background())
+	ctx := context.Background()
+	buckets, err := wclient.Buckets(ctx)
 	t.Logf("buckets: %+v, err: %v", buckets, err)
 
-	schema, err := wclient.Schema("argiculture")
+	schema, err := wclient.Schema(ctx, "argiculture")
 	if err == nil {
 		for _, s := range schema {
 			t.Logf("%+v", s)
@@ -36,7 +36,7 @@ func TestInfluxWrap_Query(t *testing.T) {
 	for _, s := range schema {
 		t.Logf("%+v tags:", s.Measurement)
 		for _, tag := range s.Tags {
-			tagValues, e := wclient.TagValues("argiculture", s.Measurement, tag)
+			tagValues, e := wclient.TagValues(ctx, "argiculture", s.Measurement, tag)
 			if e != nil {
 				t.Error(e)
 			}

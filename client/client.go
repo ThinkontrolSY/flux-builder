@@ -9,14 +9,15 @@ import (
 
 	"github.com/ThinkontrolSY/flux-builder/query"
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
+	"github.com/influxdata/influxdb-client-go/v2/api"
 	iq "github.com/influxdata/influxdb-client-go/v2/api/query"
+	"github.com/influxdata/influxdb-client-go/v2/domain"
 )
 
 type Config struct {
-	Uri    string `mapstructure:"uri"`
-	Token  string `mapstructure:"token"`
-	Org    string `mapstructure:"org"`
-	Bucket string `mapstructure:"bucket"`
+	Uri   string `mapstructure:"uri"`
+	Token string `mapstructure:"token"`
+	Org   string `mapstructure:"org"`
 }
 
 type MeasurementSchema struct {
@@ -28,7 +29,6 @@ type MeasurementSchema struct {
 type InfluxClient struct {
 	client influxdb2.Client
 	org    string
-	bucket string
 }
 
 func NewClient(config Config) (*InfluxClient, func()) {
@@ -36,7 +36,6 @@ func NewClient(config Config) (*InfluxClient, func()) {
 	return &InfluxClient{
 		client: influxClient,
 		org:    config.Org,
-		bucket: config.Bucket,
 	}, influxClient.Close
 }
 
@@ -44,8 +43,25 @@ func (w *InfluxClient) GetOrg() string {
 	return w.org
 }
 
-func (w *InfluxClient) GetBucket() string {
-	return w.bucket
+func (w *InfluxClient) CreateBucket(ctx context.Context, bucket string, retention int64) error {
+	bucketApi := w.client.BucketsAPI()
+	// 获取组织 API
+	orgAPI := w.client.OrganizationsAPI()
+
+	// 获取你的组织
+	org, err := orgAPI.FindOrganizationByName(ctx, w.org)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	_, err = bucketApi.CreateBucketWithName(ctx, org, bucket, domain.RetentionRule{
+		EverySeconds: retention,
+	})
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	return nil
 }
 
 func (w *InfluxClient) Buckets(ctx context.Context) ([]string, error) {
@@ -63,10 +79,9 @@ func (w *InfluxClient) Buckets(ctx context.Context) ([]string, error) {
 	return buckets, nil
 }
 
-func (w *InfluxClient) Schema(bucket string) ([]*MeasurementSchema, error) {
+func (w *InfluxClient) Schema(ctx context.Context, bucket string) ([]*MeasurementSchema, error) {
 	var schema []*MeasurementSchema
 	queryAPI := w.client.QueryAPI(w.org)
-	ctx := context.Background()
 	result, err := queryAPI.Query(ctx, fmt.Sprintf(`import "influxdata/influxdb/schema"
 	schema.measurements(bucket: "%s")`, bucket))
 	if err != nil {
@@ -120,10 +135,9 @@ func (w *InfluxClient) Schema(bucket string) ([]*MeasurementSchema, error) {
 	return schema, nil
 }
 
-func (w *InfluxClient) TagValues(bucket, measurement, tag string) ([]string, error) {
+func (w *InfluxClient) TagValues(ctx context.Context, bucket, measurement, tag string) ([]string, error) {
 	var tags []string
 	queryAPI := w.client.QueryAPI(w.org)
-	ctx := context.Background()
 	result, err := queryAPI.Query(ctx, fmt.Sprintf(`import "influxdata/influxdb/schema"
 	schema.measurementTagValues(
 		bucket: "%s",
@@ -144,13 +158,12 @@ func (w *InfluxClient) TagValues(bucket, measurement, tag string) ([]string, err
 	return tags, nil
 }
 
-func (w *InfluxClient) Query(q query.FluxQuery) ([]*iq.FluxRecord, error) {
+func (w *InfluxClient) Query(ctx context.Context, q query.FluxQuery) ([]*iq.FluxRecord, error) {
 	flux, err := q.QueryString()
 	if err != nil {
 		return nil, err
 	}
 	queryAPI := w.client.QueryAPI(w.org)
-	ctx := context.Background()
 	result, err := queryAPI.Query(ctx, flux)
 	if err != nil {
 		return nil, err
@@ -185,9 +198,8 @@ func (w *InfluxClient) Query(q query.FluxQuery) ([]*iq.FluxRecord, error) {
 	return tables, nil
 }
 
-func (w *InfluxClient) StrQuery(q string) ([]*iq.FluxRecord, error) {
+func (w *InfluxClient) StrQuery(ctx context.Context, q string) ([]*iq.FluxRecord, error) {
 	queryAPI := w.client.QueryAPI(w.org)
-	ctx := context.Background()
 	result, err := queryAPI.Query(ctx, q)
 	if err != nil {
 		return nil, err
@@ -206,16 +218,19 @@ func (w *InfluxClient) StrQuery(q string) ([]*iq.FluxRecord, error) {
 	return tables, nil
 }
 
-func (w *InfluxClient) QueryRaw(q query.FluxQuery) (string, error) {
+func (w *InfluxClient) QueryRaw(ctx context.Context, q query.FluxQuery) (string, error) {
 	flux, err := q.QueryString()
 	if err != nil {
 		return "", err
 	}
 	queryAPI := w.client.QueryAPI(w.org)
-	ctx := context.Background()
 	result, err := queryAPI.QueryRaw(ctx, flux, influxdb2.DefaultDialect())
 	if err != nil {
 		return "", err
 	}
 	return result, nil
+}
+
+func (w *InfluxClient) WriteAPI(bucket string) api.WriteAPI {
+	return w.client.WriteAPI(w.org, bucket)
 }
