@@ -64,6 +64,33 @@ func (w *InfluxClient) CreateBucket(ctx context.Context, bucket string, retentio
 	return nil
 }
 
+func (w *InfluxClient) SetBucketRetention(ctx context.Context, bucket string, retention int64) error {
+	bucketApi := w.client.BucketsAPI()
+	// 获取组织 API
+	orgAPI := w.client.OrganizationsAPI()
+
+	// 获取你的组织
+	org, err := orgAPI.FindOrganizationByName(ctx, w.org)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	_, err = bucketApi.UpdateBucket(ctx, &domain.Bucket{
+		Name:  bucket,
+		OrgID: org.Id,
+		RetentionRules: domain.RetentionRules([]domain.RetentionRule{
+			{
+				EverySeconds: retention,
+			},
+		}),
+	})
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	return nil
+}
+
 func (w *InfluxClient) Buckets(ctx context.Context) ([]string, error) {
 	var buckets []string
 	bucketApi := w.client.BucketsAPI()
