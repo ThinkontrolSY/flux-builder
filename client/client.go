@@ -55,7 +55,7 @@ func (w *InfluxClient) CreateBucket(ctx context.Context, bucket string, retentio
 		return err
 	}
 	_, err = bucketApi.CreateBucketWithName(ctx, org, bucket, domain.RetentionRule{
-		EverySeconds: retention,
+		EverySeconds: retention * 3600 * 24,
 	})
 	if err != nil {
 		log.Error(err)
@@ -68,11 +68,11 @@ func (w *InfluxClient) SetBucketRetention(ctx context.Context, bucket string, re
 	bucketApi := w.client.BucketsAPI()
 
 	if bucketInst, err := bucketApi.FindBucketByName(ctx, bucket); err == nil && bucketInst != nil {
-		bucketInst.RetentionRules = []domain.RetentionRule{
+		bucketInst.RetentionRules = domain.RetentionRules([]domain.RetentionRule{
 			{
-				EverySeconds: retention,
+				EverySeconds: retention * 3600 * 24,
 			},
-		}
+		})
 		_, err = bucketApi.UpdateBucket(ctx, bucketInst)
 		if err != nil {
 			log.Error(err)
