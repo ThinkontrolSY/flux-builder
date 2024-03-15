@@ -69,6 +69,8 @@ type AggregatorPipe struct {
 
 	CreateEmpty *bool
 
+	Offset *Duration
+
 	Fn TransformFn
 }
 
@@ -79,6 +81,14 @@ func (a *AggregatorPipe) Pipe() (string, error) {
 		return "", err
 	} else {
 		params = append(params, fmt.Sprintf("every: %s", a.Every))
+	}
+	if a.Offset != nil {
+		if err := a.Offset.Error(); err != nil {
+			return "", err
+		} else {
+			params = append(params, fmt.Sprintf("offset: %s", *a.Offset))
+		}
+
 	}
 	if a.Period != nil {
 		if err := a.Period.Error(); err != nil {
