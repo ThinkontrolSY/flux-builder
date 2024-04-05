@@ -191,10 +191,7 @@ func (w *InfluxClient) Query(ctx context.Context, q query.FluxQuery) ([]*iq.Flux
 		return nil, err
 	}
 	var tables []*iq.FluxRecord
-	// check for an error
-	if result.Err() != nil {
-		log.Warn("query parsing error: %s", result.Err().Error())
-	}
+
 	for result.Next() {
 		// Access data
 		record := result.Record()
@@ -216,6 +213,10 @@ func (w *InfluxClient) Query(ctx context.Context, q query.FluxQuery) ([]*iq.Flux
 		// 	Values:      record.Values(),
 		// })
 
+	}
+	// check for an error
+	if result.Err() != nil {
+		log.Warnf("query parsing error: %s", result.Err().Error())
 	}
 	return tables, nil
 }
