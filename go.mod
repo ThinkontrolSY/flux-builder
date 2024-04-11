@@ -1,6 +1,6 @@
 module github.com/ThinkontrolSY/flux-builder
 
-go 1.19
+go 1.22
 
 require (
 	github.com/influxdata/influxdb-client-go/v2 v2.13.0
