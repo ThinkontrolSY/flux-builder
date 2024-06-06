@@ -25,6 +25,7 @@ type FluxFilter struct {
 	TagNEQ    *string
 	TagMatch  *string
 	TagNMatch *string
+	TagExists *bool
 
 	Value *string
 }
@@ -134,6 +135,13 @@ func (f *FluxFilter) p() (string, error) {
 		}
 		if f.TagNMatch != nil {
 			equations = append(equations, fmt.Sprintf("r.%s !~ %s", *f.TagKey, *f.TagNMatch))
+		}
+		if f.TagExists != nil {
+			if *f.TagExists {
+				equations = append(equations, fmt.Sprintf("exists r.%s", *f.TagKey))
+			} else {
+				equations = append(equations, fmt.Sprintf("not exists r.%s", *f.TagKey))
+			}
 		}
 	}
 
