@@ -11,7 +11,7 @@ func TestInfluxWrap_Query(t *testing.T) {
 		Token: "3bem-Ou9EMDcoI3MXXi6UnnZqVYJBtYjGWz35myYOscZ7H0t6Wdu7ddybSkV8dAJWp4pDB1vwDJ0kxi2Rw_zLw==",
 		Org:   "smt",
 		// Bucket: "argiculture",
-	})
+	}, 120)
 	defer closeFunc()
 
 	// flux := `from(bucket: "argiculture")

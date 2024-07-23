@@ -31,8 +31,10 @@ type InfluxClient struct {
 	org    string
 }
 
-func NewClient(config Config) (*InfluxClient, func()) {
-	influxClient := influxdb2.NewClient(config.Uri, config.Token)
+func NewClient(config Config, timeout uint) (*InfluxClient, func()) {
+	Opts := influxdb2.DefaultOptions()
+	Opts.SetHTTPRequestTimeout(timeout)
+	influxClient := influxdb2.NewClientWithOptions(config.Uri, config.Token, Opts)
 	return &InfluxClient{
 		client: influxClient,
 		org:    config.Org,
