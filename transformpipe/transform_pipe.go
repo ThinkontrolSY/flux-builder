@@ -18,16 +18,16 @@ func (d Duration) Error() error {
 	if r.MatchString(string(d)) {
 		return nil
 	}
-	return fmt.Errorf("Invalid duration value: %s, duration should format with IMPL#2026", d)
+	return fmt.Errorf("invalid duration value: %s, duration should format with IMPL#2026", d)
 }
 
 type TransformInput struct {
-	Name   string                 `json:"name"`
+	Fn     string                 `json:"fn"`
 	Params map[string]interface{} `json:"params"`
 }
 
 func (t *TransformInput) Transform() (TransformPipe, error) {
-	switch t.Name {
+	switch t.Fn {
 	case "aggregateWindow":
 		var tp AggregatorPipe
 		if err := mapstructure.Decode(t.Params, &tp); err == nil {
@@ -398,6 +398,6 @@ func (t *TransformInput) Transform() (TransformPipe, error) {
 	case "yield":
 		return &YieldPipe{}, nil
 	default:
-		return nil, fmt.Errorf("Invalid transform name: %s", t.Name)
+		return nil, fmt.Errorf("invalid transform name: %s", t.Fn)
 	}
 }
