@@ -14,7 +14,7 @@ type TransformPipe interface {
 type Duration string
 
 func (d Duration) Error() error {
-	r := regexp.MustCompile(`^(\d+(ns|us|ms|s|m|h|d|w|mo|y))+$`)
+	r := regexp.MustCompile(`^(-)?(\d+(ns|us|ms|s|m|h|d|w|mo|y))+$`)
 	if r.MatchString(string(d)) {
 		return nil
 	}
