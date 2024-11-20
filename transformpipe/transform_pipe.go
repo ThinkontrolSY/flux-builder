@@ -345,6 +345,20 @@ func (t *TransformInput) Transform() (TransformPipe, error) {
 		} else {
 			return nil, err
 		}
+	case "keep":
+		var tp KeepPipe
+		if err := mapstructure.Decode(t.Params, &tp); err == nil {
+			return &tp, nil
+		} else {
+			return nil, err
+		}
+	case "drop":
+		var tp DropPipe
+		if err := mapstructure.Decode(t.Params, &tp); err == nil {
+			return &tp, nil
+		} else {
+			return nil, err
+		}
 	case "toBool":
 		return &ToBoolPipe{}, nil
 	case "toFloat":

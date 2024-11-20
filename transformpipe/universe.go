@@ -604,6 +604,28 @@ func (a *TimeShiftPipe) Pipe() (string, error) {
 	return fmt.Sprintf("|> timeShift(%s)", strings.Join(params, ", ")), nil
 }
 
+type KeepPipe struct {
+	Columns []string
+}
+
+func (a *KeepPipe) Pipe() (string, error) {
+	if len(a.Columns) > 0 {
+		return fmt.Sprintf(`|> keep(columns: ["%s"])`, strings.Join(a.Columns, `", "`)), nil
+	}
+	return "", fmt.Errorf("keep requires at least one column")
+}
+
+type DropPipe struct {
+	Columns []string
+}
+
+func (a *DropPipe) Pipe() (string, error) {
+	if len(a.Columns) > 0 {
+		return fmt.Sprintf(`|> drop(columns: ["%s"])`, strings.Join(a.Columns, `", "`)), nil
+	}
+	return "", fmt.Errorf("drop requires at least one column")
+}
+
 type TimeWeightedAvgPipe struct {
 	Unit Duration
 }
