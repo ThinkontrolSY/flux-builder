@@ -516,6 +516,32 @@ func (a *StateDurationPipe) Pipe() (string, error) {
 	return fmt.Sprintf("|> stateDuration(%s)", strings.Join(params, ", ")), nil
 }
 
+type StateTrackingPipe struct {
+	CountColumn    *string
+	DurationColumn *string
+	Fn             string
+	DurationUnit   *Duration
+}
+
+func (a *StateTrackingPipe) Pipe() (string, error) {
+	var params []string
+	params = append(params, fmt.Sprintf(`fn: %s`, a.Fn))
+	if a.CountColumn != nil {
+		params = append(params, fmt.Sprintf(`countColumn: "%s"`, *a.CountColumn))
+	}
+	if a.DurationColumn != nil {
+		params = append(params, fmt.Sprintf(`durationColumn: "%s"`, *a.DurationColumn))
+	}
+	if a.DurationUnit != nil {
+		if err := a.DurationUnit.Error(); err != nil {
+			return "", err
+		} else {
+			params = append(params, fmt.Sprintf("durationUnit: %s", *a.DurationUnit))
+		}
+	}
+	return fmt.Sprintf("|> stateTracking(%s)", strings.Join(params, ", ")), nil
+}
+
 type StddevMode string // "population" or "sample"
 const (
 	StddevModePopulation StddevMode = "population"

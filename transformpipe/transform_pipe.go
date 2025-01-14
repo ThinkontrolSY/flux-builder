@@ -300,6 +300,13 @@ func (t *TransformInput) Transform() (TransformPipe, error) {
 		} else {
 			return nil, err
 		}
+	case "stateTracking":
+		var tp StateTrackingPipe
+		if err := mapstructure.Decode(t.Params, &tp); err == nil {
+			return &tp, nil
+		} else {
+			return nil, err
+		}
 	case "sum":
 		if t.Params == nil {
 			return &SumPipe{}, nil
