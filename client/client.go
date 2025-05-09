@@ -259,3 +259,7 @@ func (w *InfluxClient) QueryRaw(ctx context.Context, q query.FluxQuery) (string,
 func (w *InfluxClient) WriteAPI(bucket string) api.WriteAPI {
 	return w.client.WriteAPI(w.org, bucket)
 }
+
+func (w *InfluxClient) WriteAPIBlocking(bucket string) api.WriteAPIBlocking {
+	return w.client.WriteAPIBlocking(w.org, bucket)
+}
