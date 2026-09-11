@@ -235,9 +235,6 @@ func (w *InfluxClient) StrQuery(ctx context.Context, q string) ([]*iq.FluxRecord
 		log.Warn("query parsing error: %s", result.Err().Error())
 	}
 	for result.Next() {
-		if result.TableChanged() {
-			log.Warn("table: %s", result.TableMetadata().String())
-		}
 		tables = append(tables, result.Record())
 	}
 	return tables, nil
